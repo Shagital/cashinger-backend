@@ -9,6 +9,7 @@ class PaymentSchema extends Schema {
     this.create('payments', (table) => {
       table.increments()
       table.integer('user_id').unsigned().references('id').inTable('users');
+      table.integer('payment_method_id').unsigned().references('id').inTable('payment_methods');
       table.decimal('amount', 10, 2)
       table.string('currency', 10)
       table.string('txn_ref', 80).unique();

@@ -15,6 +15,7 @@ class AssetSchema extends Schema {
       table.string('logo_id').unsigned().references('id').inTable('attachments');
       table.decimal('rate', 10, 6);
       table.decimal('prev_rate', 10, 6);
+      table.boolean('featured').defaultTo(false);
     })
   }
 
