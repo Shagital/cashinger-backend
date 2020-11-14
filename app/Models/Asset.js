@@ -13,7 +13,11 @@ class Asset extends Model {
   }
 
   investmentOption () {
-    return this.hasOne('App/Models/investmentOption', 'id', 'investment_option_id');
+    return this.hasOne('App/Models/InvestmentOption', 'id', 'investment_option_id');
+  }
+
+  logo () {
+    return this.belongsTo('App/Models/Attachment', 'id', 'logo_id');
   }
 }
 

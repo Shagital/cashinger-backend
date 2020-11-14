@@ -27,9 +27,6 @@ class Attachment extends Model {
     return this.belongsTo('App/Models/User', 'id', 'user_id');
   }
 
-  object () {
-    return this.belongsTo(this.object_type, 'id', 'object_id');
-  }
 }
 
 module.exports = Attachment
