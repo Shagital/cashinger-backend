@@ -6,6 +6,10 @@ let iv = Env.get('ENCRYPTION_KEY');
 const bugsnag = use('BugSnag')
 const fetch = use('node-fetch');
 const url = Env.get('SLACK_WEBHOOK_URL');
+const africasTalking = require('africastalking')({
+  apiKey: Env.get('AFRICASTALKING_API_KEY'),         // use your sandbox app API key for development in the test environment
+  username: Env.get('AFRICASTALKING_API_USERNAME'),
+});
 
 async function slackLogger(error, request = {}, options = {}) {
   let requestAll = request.all();
@@ -101,6 +105,28 @@ function decrypt(text) {
 
 function addSlash( str ) {
   return (str + '').replace(/[\\"']/g, '\\$&').replace(/\u0000/g, '\\0');
+}
+
+function sendSms(to, message) {
+// Initialize a service e.g. SMS
+  const sms = africasTalking.SMS
+
+// Use the service
+  const options = {
+    to: to,
+    message: message
+  }
+
+// Send message and capture the response or error
+  return sms.send(options)
+    .then( response => {
+      console.log(response);
+      return true;
+    })
+    .catch( error => {
+      console.log(error);
+      return false;
+    });
 }
 
 module.exports = {

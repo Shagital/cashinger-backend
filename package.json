@@ -41,6 +41,7 @@
     "@radmen/adonis-lucid-soft-deletes": "^0.2.0",
     "adonis-4-cloudinary": "^1.0.2",
     "adonisjs-bugsnag": "^0.2.0",
+    "africastalking": "^0.5.2",
     "coinbase": "^2.0.8",
     "express": "^4.17.1",
     "express-useragent": "^1.0.15",
