@@ -60,6 +60,10 @@ class User extends Model {
   customer () {
     return this.hasOne('App/Models/Customer', 'id', 'user_id');
   }
+
+  demo () {
+    return this.belongsTo('App/Models/User', 'id', 'parent_id');
+  }
 }
 
 module.exports = User

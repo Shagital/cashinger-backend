@@ -8,7 +8,8 @@ class OtpSchema extends Schema {
     this.create('otps', (table) => {
       table.increments()
       table.string('code')
-      table.string('identifier')
+      table.integer('user_id').unsigned().references('id').inTable('users');
+      table.enum('type', ['register', 'login']).defaultTo('register');
       table.timestamp('expires_at')
       table.timestamps()
     })
