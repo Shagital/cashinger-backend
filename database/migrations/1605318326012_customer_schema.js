@@ -19,9 +19,10 @@ class CustomerSchema extends Schema {
       table.string('post_code', 10).nullable();
 
       // ID verification
-      table.integer('document_number').unsigned().nullable();
+      table.integer('document_number').unsigned().nullable().unique();
+      table.date('issue_date').nullable();
+      table.date('expiry_date').nullable();
       table.integer('document_id').unsigned().nullable().references('id').inTable('attachments');
-      table.integer('photo_id').unsigned().nullable().references('id').inTable('attachments');
 
       // bank
       table.integer('bank_id').unsigned().nullable().references('id').inTable('banks');
@@ -32,10 +33,12 @@ class CustomerSchema extends Schema {
       // Next of kin
       table.string('nok_first_name').nullable();
       table.string('nok_last_name').nullable();
+      table.string('nok_relationship').nullable();
       table.string('nok_email').nullable();
       table.string('nok_country_id').nullable();
       table.string('nok_region_id').nullable();
       table.string('nok_city_id').nullable();
+      table.string('nok_post_code').nullable();
       table.string('nok_address').nullable();
       table.string('nok_phone').nullable();
 

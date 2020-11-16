@@ -26,6 +26,8 @@ const providers = [
   '@adonisjs/framework/providers/ViewProvider',
   'adonisjs-bugsnag/providers/BugSnagProvider',
   '@adonisjs/websocket/providers/WsProvider',
+  '@shagital/adonisjs-phone-validator/providers/PhoneValidatorProvider',
+  '@adonisjs/antl/providers/AntlProvider'
 ]
 
 /*

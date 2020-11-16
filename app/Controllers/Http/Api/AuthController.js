@@ -1,11 +1,15 @@
 'use strict'
 const User = use('App/Models/User')
+const Customer = use('App/Models/Customer')
 const Oauth = use('App/Models/Oauth')
+const Otp = use('App/Models/Otp')
 const {validateAll} = use('Validator')
-const {random, encrypt, bugsnagLogger:logger} = use("App/Common/helpers")
+const { validate } = use('Validator')
+const {random, encrypt, bugsnagLogger:logger, sendMail, generateOtp} = use("App/Common/helpers")
 const moment = use("moment")
-const Env = use('Env')
+const Env = use('Env');
 const FRONTEND_URL = Env.get('FRONTEND_URL')
+
 
 class AuthController {
   async redirect({ally, request, response, params: {provider}}) {
@@ -60,12 +64,12 @@ class AuthController {
     }
   }
 
-  async register({auth, response, request}) {
+  async register({response, request}) {
     const rules = {
-      email: 'required|email',
+      email: 'required|email|unique:users',
+      country_id: 'required|email|exists:countries,id',
       password: 'required:min:8',
-      first_name: 'required|string',
-      last_name: 'required|string',
+      phone: 'required|phone:NG',
     };
 
     const validation = await validateAll(request.all(), rules)
@@ -74,13 +78,25 @@ class AuthController {
       return response.status(422).send(validation.messages())
     }
 
-    const data = request.only(['email', 'password', 'first_name', 'last_name']);
-    data.ip_address = request.ip();
+    const data = request.only(['email', 'password', 'phone', 'country_id' ]);
 
     let user = await this.createOrFindUser(data);
-    let token = await auth.withRefreshToken().generate(user);
 
-    response.send({token:token.token, ...user.toJSON()})
+    let customer = await Customer.create({
+      user_id : user.id,
+      wallet : 0,
+      phone : data.phone
+    });
+
+    let otp = await generateOtp(user.id, random(16), 'email');
+
+    sendMail(user.email, 'Account Verification', {
+      url: `${Env.get('APP_URL')}/api/verify/email?code=${otp.code}`,
+      user,
+      otp
+    });
+
+    response.send({data:user})
 
   }
 
@@ -94,12 +110,6 @@ class AuthController {
       user.first_name = data.first_name || null;
       user.last_name = data.last_name || null;
       user.username = `${data.username || `${data.first_name || ''}${data.last_name || ''}`}_${random(4)}`;
-      user.public_key = random(64);
-      user.private_key = encrypt(user.public_key);
-      user.subscription_ends = moment().add(1, 'M').format('YYYY-MM-DD HH:mm:ss');
-      user.photo_url = data.photo_url;
-      user.ip_address = data.ip_address || null;
-      user.plan_id = 1;
       newUser = true;
     }
 
@@ -142,34 +152,8 @@ class AuthController {
 
   async profile({auth, response, request}) {
     let user = await auth.getUser();
-    await user.loadMany(['tokens', 'feedbacks', 'oauth']);
+    await user.loadMany(['customer']);
     response.send({'data' : user});
-  }
-
-  async complete({auth, response, request}) {
-    const rules = {
-      first_name: 'string',
-      last_name: 'string',
-      password: 'required|min:8|same:password_confirmation',
-    };
-
-    const validation = await validateAll(request.all(), rules)
-
-    if (validation.fails()) {
-      return response.status(422).send(validation.messages())
-    }
-
-    const data = request.only(['email', 'password', 'first_name', 'last_name']);
-
-    let user = await auth.getUser();
-    user.email = data.email;
-    user.first_name = data.first_name || null;
-    user.last_name = data.last_name || null;
-    user.password = data.password;
-    await user.save()
-
-    response.send(user)
-
   }
 }
 

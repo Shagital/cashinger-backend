@@ -6,10 +6,13 @@ let iv = Env.get('ENCRYPTION_KEY');
 const bugsnag = use('BugSnag')
 const fetch = use('node-fetch');
 const url = Env.get('SLACK_WEBHOOK_URL');
+const Mail = use('Mail');
+const Otp = use('App/Models/Otp');
 const africasTalking = require('africastalking')({
   apiKey: Env.get('AFRICASTALKING_API_KEY'),         // use your sandbox app API key for development in the test environment
   username: Env.get('AFRICASTALKING_API_USERNAME'),
 });
+const Antl = use('Antl');
 
 async function slackLogger(error, request = {}, options = {}) {
   let requestAll = request.all();
@@ -129,6 +132,43 @@ function sendSms(to, message) {
     });
 }
 
+async function sendMail(recipient, subject, data, template) {
+
+  let meta = {
+    appName: Env.get('APP_NAME'),
+    appEmail: Env.get('APP_EMAIL'),
+    appAddress: Env.get('APP_ADDRESS'),
+    date: new Date().getFullYear(),
+  }
+  data = {meta, ...data};
+  await Mail.send(`mails/${template}`, data, (message) => {
+    message
+      .to(recipient)
+      .from(Env.get('MAIL_FROM_ADDRESS'))
+      .subject(`${Env.get('APP_NAME')} - ${subject}`)
+  })
+}
+
+async function generateOtp( code, type, userId = null, duration = 60 ) {
+  return Otp.create({
+    user_id : userId,
+    code : code,
+    type : type,
+    expires_at: moment().add(duration, 'minutes'),
+  });
+
+}
+
+async function validateOtp(code, type) {
+  return Otp.query()
+    .where({'code': code, valid: true, type: type}).where('expires_at', moment())
+    .first();
+}
+
+async function antl(key, values = {}) {
+  return Antl.formatMessage('response.eta', values)
+}
+
 module.exports = {
   random,
   isMobile,
@@ -138,5 +178,10 @@ module.exports = {
   bugsnagLogger,
   slackLogger,
   addSlash,
-  randomNumber
+  randomNumber,
+  sendSms,
+  sendMail,
+  generateOtp,
+  validateOtp,
+  antl
 }

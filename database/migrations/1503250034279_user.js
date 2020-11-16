@@ -13,7 +13,7 @@ class UserSchema extends Schema {
       table.string('last_name', 80).nullable()
       table.string('email', 100).notNullable().unique()
       table.string('password').notNullable()
-      table.string('photo_url').nullable();
+      table.integer('photo_id').unsigned().nullable().references('id').inTable('attachments');
       table.integer('parent_id').unsigned().nullable().references('id').inTable('users'); // if set, this user is credited with a demo wallet amount of say $100,000 so as to perform demo actions on the app
       table.timestamp('deleted_at', { useTz: true }).nullable();
       table.timestamps(true, true)
